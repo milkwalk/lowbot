@@ -9,16 +9,19 @@ public class HelpCommand implements Command {
 	@Override
 	public boolean onCommand(MessageReceivedEvent event) {
 
-		String str = "Hi! I am Lowbot :) here are my commands: \n\n" 
-				+ "!lowbot - will show help menu\n"
-				+ "!lowbot clear - will clear chat\n" 
-				+ "!lowbot join <name> - will make me join a VC\n"
-				+ "!lowbot leave - will make me leave a VC\n"
-				+ "!lowbot queue - will show a current queue for the music\n"
-				+ "!lowbot play <url> - will put an url to the playlist\n"
-				+ "!lowbot skip - will skip a song";
+		
+		StringBuilder sb = new StringBuilder();
 
-		event.getChannel().sendMessage(str);
+		sb.append("Hi! I am Lowbot :) here are my commands: \n\n");
+		sb.append("!lowbot - will show help menu\n");
+		sb.append("!lowbot clear - will clear chat\n");
+		sb.append("!lowbot join <name> - will make me join a VC\n");
+		sb.append("!lowbot leave - will make me leave a VC\n");
+		sb.append("!lowbot queue - will show a current queue for the music\n");
+		sb.append("!lowbot play <url> - will put an url to the playlist\n");
+		sb.append("!lowbot skip - will skip a song");
+
+		event.getChannel().sendMessage(sb.toString());
 		return true;
 	}
 
