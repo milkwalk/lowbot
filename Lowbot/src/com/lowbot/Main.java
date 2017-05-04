@@ -1,8 +1,18 @@
 package com.lowbot;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
-import com.lowbot.commands.CommandHandler;
+import com.lowbot.commands.ClearCommand;
+import com.lowbot.commands.HelpCommand;
+import com.lowbot.commands.JoinVCCommand;
+import com.lowbot.commands.LeaveVCCommand;
+import com.lowbot.commands.PlayCommand;
+import com.lowbot.commands.QueueCommand;
+import com.lowbot.commands.SkipCommand;
+import com.lowbot.constructors.CommandHandler;
+import com.lowbot.constructors.ServerInformation;
+import com.lowbot.events.MessageEvent;
 
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
@@ -11,70 +21,98 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 
 public class Main {
-	
+
 	private static IDiscordClient bot;
 	private static Logger log;
-	
+
 	private static LowbotAPI api;
 	
-	public static void main(String[] args){
-		//initialise logger
+	private static CommandHandler commands;
+	private static HashMap<Long, ServerInformation> servers = new HashMap<Long, ServerInformation>();
+	
+	public static void registerCommands(){
+		commands = new CommandHandler();	
+		commands.registerCommand("help", new HelpCommand());		
+		commands.registerCommand("clear", new ClearCommand());		
+		commands.registerCommand("join", new JoinVCCommand());		
+		commands.registerCommand("leave", new LeaveVCCommand());		
+		commands.registerCommand("queue", new QueueCommand());		
+		commands.registerCommand("play", new PlayCommand());		
+		commands.registerCommand("skip", new SkipCommand());		
+	}
+
+	public static void main(String[] args) {
+		// initialise logger
 		log = Logger.getLogger("Lowbot");
-		
-		//login bot
-		bot = createClient("MzA4ODc2MTc5ODY2MjU1MzYw.C-nPrA.cqzxGtd9jcz7yMogGTa9Pq9Iv7E", true);	
+
+		// login bot
+		bot = createClient("MzA4ODc2MTc5ODY2MjU1MzYw.C-nPrA.cqzxGtd9jcz7yMogGTa9Pq9Iv7E", true);
 		log.info("Logged in.");
-			
-		//load api kek
+
+		// load api kek
 		api = new LowbotAPI();
 		
-		//registering events
-		log.info("Registering events..");
-		EventDispatcher dispatcher = bot.getDispatcher(); 
-		dispatcher.registerListener(new MessageEvent());
-		dispatcher.registerListener(new CommandHandler());
-		log.info("Done");
+		//registering commands
+		registerCommands();
 		
-		//sheduled tasks
-		new java.util.Timer().schedule( new java.util.TimerTask() {
-	            @Override
-	            public void run() {
-	        		log.info("Bot servers: ");		        		
-	        		for(IGuild g : bot.getGuilds()){
-	        			log.info("      Server: " + g.getName() + " Members: " + g.getTotalMemberCount());
-	        		}
-	        		bot.getOurUser().getClient().changePlayingText("Type !help");
-	            }
-	        }, 5000); //run task in 5 seconds after startup ^^
-		
+		//register events
+		registerEvents();
+
+		// sheduled tasks
+		new java.util.Timer().schedule(new java.util.TimerTask() {
+			@Override
+			public void run() {
+				log.info("Bot servers: ");
+				for (IGuild g : bot.getGuilds()) {
+					log.info("      Server: " + g.getName() + " Members: " + g.getTotalMemberCount());
+					Main.getServers().put(g.getLongID(), new ServerInformation(g));
+				}
+				bot.getOurUser().getClient().changePlayingText("Type !lowbot");
+			}
+		}, 5000); // run task in 5 seconds after startup ^^
+
 	}
 	
 	
-    public static IDiscordClient createClient(String token, boolean login) { // Returns a new instance of the Discord client
-        ClientBuilder clientBuilder = new ClientBuilder(); // Creates the ClientBuilder instance
-        clientBuilder.withToken(token); // Adds the login info to the builder
-        try {
-            if (login) {
-                return clientBuilder.login(); // Creates the client instance and logs the client in
-            } else {
-                return clientBuilder.build(); // Creates the client instance but it doesn't log the client in yet, you would have to call client.login() yourself
-            }
-        } catch (DiscordException e) { // This is thrown if there was a problem building the client
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    public static Logger getDebug(){
-    	return log;
-    }
-    
-    public static IDiscordClient getBot(){
-    	return bot;
-    }
-    
-    public static LowbotAPI getApi(){
-    	return api;
-    }
+	public static void registerEvents(){
+		log.info("Registering events..");
+		EventDispatcher dispatcher = bot.getDispatcher();
+		dispatcher.registerListener(new MessageEvent());
+		//dispatcher.registerListener(new EnableEvent());
+		//registering event for commands
+		dispatcher.registerListener(commands);
+		log.info("Done");
+	}
+
+	public static IDiscordClient createClient(String token, boolean login) {
+		ClientBuilder clientBuilder = new ClientBuilder(); 
+		clientBuilder.withToken(token); // Adds the login info to the builder
+		try {
+			if (login) {
+				return clientBuilder.login(); 
+			} else {
+				return clientBuilder.build(); 
+			}
+		} catch (DiscordException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static Logger getDebug() {
+		return log;
+	}
+
+	public static IDiscordClient getBot() {
+		return bot;
+	}
+
+	public static LowbotAPI getApi() {
+		return api;
+	}
+	
+	public static HashMap<Long, ServerInformation> getServers(){
+		return servers;
+	}
 
 }
