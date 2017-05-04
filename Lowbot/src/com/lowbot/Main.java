@@ -34,7 +34,7 @@ public class Main {
 		commands = new CommandHandler();	
 		commands.registerCommand("help", new HelpCommand());		
 		commands.registerCommand("clear", new ClearCommand());		
-		commands.registerCommand("join", new JoinVCCommand());		
+		commands.registerCommand("join", new JoinVCCommand());			
 		commands.registerCommand("leave", new LeaveVCCommand());		
 		commands.registerCommand("queue", new QueueCommand());		
 		commands.registerCommand("play", new PlayCommand());		
